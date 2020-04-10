@@ -3,10 +3,9 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Security\Core\User\UserInterface;
-
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
@@ -35,11 +34,17 @@ class User implements UserInterface, TwoFactorInterface
      * @ORM\Column(type="string")
      */
     private $password;
-    
+
     /**
      * @ORM\Column(name="googleAuthenticatorSecret", type="string", nullable=true)
      */
     private $googleAuthenticatorSecret;
+
+    /**
+     *
+     * @var boolean
+     */
+    private $checkPassword;
 
     public function getId(): ?int
     {
@@ -126,7 +131,7 @@ class User implements UserInterface, TwoFactorInterface
 
     public function getGoogleAuthenticatorUsername(): string
     {
-        return $this->username;
+        return $this->getUsername();
     }
 
     public function getGoogleAuthenticatorSecret(): ?string
@@ -137,5 +142,25 @@ class User implements UserInterface, TwoFactorInterface
     public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): void
     {
         $this->googleAuthenticatorSecret = $googleAuthenticatorSecret;
+    }
+
+    /**
+     * Get the value of checkPassword
+     */ 
+    public function getCheckPassword()
+    {
+        return $this->checkPassword;
+    }
+
+    /**
+     * Set the value of checkPassword
+     *
+     * @return  self
+     */ 
+    public function setCheckPassword($checkPassword)
+    {
+        $this->checkPassword = $checkPassword;
+
+        return $this;
     }
 }
