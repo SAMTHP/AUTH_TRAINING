@@ -46,6 +46,11 @@ class User implements UserInterface, TwoFactorInterface
      */
     private $checkPassword;
 
+    /**
+     * @ORM\Column(type="string", length=50, nullable=true)
+     */
+    private $usual_browser;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -160,6 +165,18 @@ class User implements UserInterface, TwoFactorInterface
     public function setCheckPassword($checkPassword)
     {
         $this->checkPassword = $checkPassword;
+
+        return $this;
+    }
+
+    public function getUsualBrowser(): ?string
+    {
+        return $this->usual_browser;
+    }
+
+    public function setUsualBrowser(?string $usual_browser): self
+    {
+        $this->usual_browser = $usual_browser;
 
         return $this;
     }

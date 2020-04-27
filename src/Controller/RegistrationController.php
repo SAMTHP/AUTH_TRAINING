@@ -51,11 +51,36 @@ class RegistrationController extends AbstractController
 
                 $user->setGoogleAuthenticatorSecret($googleAuthenticatorInterface->generateSecret());
 
+                $u_agent = $_SERVER['HTTP_USER_AGENT'];
+                $bname = 'Unknown';
+        
+                // Next get the name of the useragent yes seperately and for good reason
+                if(preg_match('/MSIE/i',$u_agent) && !preg_match('/Opera/i',$u_agent)){
+                  $bname = 'Internet Explorer';
+                }elseif(preg_match('/Firefox/i',$u_agent)){
+                  $bname = 'Mozilla Firefox';
+                }elseif(preg_match('/OPR/i',$u_agent)){
+                  $bname = 'Opera';
+                }elseif(preg_match('/Chrome/i',$u_agent) && !preg_match('/Edge/i',$u_agent)){
+                  $bname = 'Google Chrome';
+                }elseif(preg_match('/Safari/i',$u_agent) && !preg_match('/Edge/i',$u_agent)){
+                  $bname = 'Apple Safari';
+                }elseif(preg_match('/Netscape/i',$u_agent)){
+                  $bname = 'Netscape';
+                }elseif(preg_match('/Edge/i',$u_agent)){
+                  $bname = 'Edge';
+                }elseif(preg_match('/Trident/i',$u_agent)){
+                  $bname = 'Internet Explorer';
+                }
+
+                $user->setUsualBrowser($bname);
+
                 $entityManager = $this->getDoctrine()->getManager();
                 $entityManager->persist($user);
                 $entityManager->flush();
 
                 // do anything else you need here, like send an email
+               
 
                 return $this->redirectToRoute('app_login');
             }
