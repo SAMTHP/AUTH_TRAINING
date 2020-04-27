@@ -3,6 +3,8 @@
 namespace App\Security;
 
 use App\Entity\User;
+use App\Entity\LoginAttempt;
+use App\Repository\LoginAttemptRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,13 +32,15 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
     private $urlGenerator;
     private $csrfTokenManager;
     private $passwordEncoder;
+    private $loginAttemptRepository;
 
-    public function __construct(EntityManagerInterface $entityManager, UrlGeneratorInterface $urlGenerator, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder)
+    public function __construct(EntityManagerInterface $entityManager, UrlGeneratorInterface $urlGenerator, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder, LoginAttemptRepository $loginAttemptRepository)
     {
         $this->entityManager = $entityManager;
         $this->urlGenerator = $urlGenerator;
         $this->csrfTokenManager = $csrfTokenManager;
         $this->passwordEncoder = $passwordEncoder;
+        $this->loginAttemptRepository = $loginAttemptRepository;
     }
 
     public function supports(Request $request)
@@ -56,6 +60,11 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
             Security::LAST_USERNAME,
             $credentials['email']
         );
+
+        $newLoginAttempt = new LoginAttempt($request->getClientIp(), $credentials['email']);
+
+        $this->entityManager->persist($newLoginAttempt);
+        $this->entityManager->flush();
 
         return $credentials;
     }
@@ -79,6 +88,10 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
 
     public function checkCredentials($credentials, UserInterface $user)
     {
+        if ($this->loginAttemptRepository->countRecentLoginAttempts($credentials['email']) > 3) {
+            throw new CustomUserMessageAuthenticationException('Trop de tentatives de connexion d\'affilée. Veuillez patienter avant de re-essayer');
+        }
+        
         return $this->passwordEncoder->isPasswordValid($user, $credentials['password']);
     }
 
