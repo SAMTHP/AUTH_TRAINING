@@ -56,6 +56,11 @@ class User implements UserInterface, TwoFactorInterface
      */
     private $usualIp;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $countryName;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -194,6 +199,18 @@ class User implements UserInterface, TwoFactorInterface
     public function setUsualIp(?string $usualIp): self
     {
         $this->usualIp = $usualIp;
+
+        return $this;
+    }
+
+    public function getCountryName(): ?string
+    {
+        return $this->countryName;
+    }
+
+    public function setCountryName(?string $countryName): self
+    {
+        $this->countryName = $countryName;
 
         return $this;
     }

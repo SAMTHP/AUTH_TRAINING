@@ -70,21 +70,54 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         $currentUser = $this->userRepository->findOneByEmail($userMail);
         $savedBrowserForCurrentUser = $currentUser->getUsualBrowser();
         $savedIpForCurrentUser = $currentUser->getUsualIp();
+        $savedCountryForcurrentUser = $currentUser->getCountryName();
         $u_agent = $_SERVER['HTTP_USER_AGENT'];
         $bname = 'Unknown';
         
-        // ip change check for mail sending
+        // Gathering user IP 
         $userIp = $request->server->get('REMOTE_ADDR');
+
+        // Gathering IP informations for country checking
+        $db = new \IP2Location\Database ('../src/Database/IP2LOCATION.BIN', \IP2Location\Database::FILE_IO);
+        $ipInfos = $db->lookup($userIp, \IP2Location\Database::ALL);
+        
+        // If user doesn't have a saved IP
+        if ($savedIpForCurrentUser == NULL){
+            $currentUser->setUsualIp($userIp);
+        }
+
+        // If user doesn't have a saved country
+        if ($savedIpForCurrentUser == NULL){
+            $currentUser->setCountryName($ipInfos["countryName"]);
+        }
+
+        // ip change check for mail sending
         if ($userIp != $savedIpForCurrentUser) {
-            if ($savedIpForCurrentUser != NULL) {
+            if ($ipInfos["countryName"] == $savedCountryForCurrentUser) {
                 $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
                 ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
                 ->subject('Nouvelle adresse IP détectée')
-                ->htmlTemplate('email/ipaddress.html.twig')
+                ->htmlTemplate('email/ipAddress.html.twig')
                 ->context([
                     'user' => $currentUser
                 ]);
                 $this->mailer->send($email);
+            } else {
+                $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
+                ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
+                ->subject('Nouvelle adresse IP détectée venant d\'un autre pays')
+                ->htmlTemplate('email/ipAddressDifferentCountry.html.twig')
+                ->context([
+                    'user' => $currentUser
+                ]);
+                $this->mailer->send($email);
+
+                $flashBag = $request->getSession()->getFlashBag();
+                $flashBag->add(
+                    'danger',
+                    'Merci de valider votre navigateur via le mail que nous vous avons envoyé.'
+                );
+                $currentUser->setCountryName($ipInfos["countryName"]);
             }
             $currentUser->setUsualIp($userIp);
         }

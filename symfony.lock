@@ -81,6 +81,9 @@
     "egulias/email-validator": {
         "version": "2.1.17"
     },
+    "ip2location/ip2location-php": {
+        "version": "8.2.2"
+    },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
     },
