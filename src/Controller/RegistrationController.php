@@ -49,6 +49,17 @@ class RegistrationController extends AbstractController
                     )
                 );
 
+                        
+                // Gathering user IP 
+                $userIp = $request->server->get('REMOTE_ADDR');
+                $user->setUsualIp($userIp);
+
+                // Gathering IP informations for country checking
+                $db = new \IP2Location\Database ('../src/Database/IP2LOCATION.BIN', \IP2Location\Database::FILE_IO);
+                $ipInfos = $db->lookup($userIp, \IP2Location\Database::ALL);
+                $user->setCountryName($ipInfos['countryName']);
+                
+
                 $user->setGoogleAuthenticatorSecret($googleAuthenticatorInterface->generateSecret());
 
                 $u_agent = $_SERVER['HTTP_USER_AGENT'];
