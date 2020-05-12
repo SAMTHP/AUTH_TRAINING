@@ -11,12 +11,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\LoginAttemptRepository;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -43,9 +44,9 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
     private $loginAttemptRepository;
     private $userRepository;
     private $mailer; 
-    private $redirection;
+    private $router;
 
-    public function __construct(RedirectService $redirection, MailerInterface $mailer, EntityManagerInterface $entityManager, UrlGeneratorInterface $urlGenerator, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder, LoginAttemptRepository $loginAttemptRepository, UserRepository $userRepository)
+    public function __construct(RouterInterface $router, MailerInterface $mailer, EntityManagerInterface $entityManager, UrlGeneratorInterface $urlGenerator, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder, LoginAttemptRepository $loginAttemptRepository, UserRepository $userRepository)
     {
         $this->entityManager = $entityManager;
         $this->urlGenerator = $urlGenerator;
@@ -54,7 +55,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         $this->loginAttemptRepository = $loginAttemptRepository;
         $this->userRepository = $userRepository;
         $this->mailer = $mailer;
-        $this->redirection = $redirection;
+        $this->router = $router;
     }
 
     public function supports(Request $request)
@@ -160,7 +161,9 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
                     'Merci de valider votre navigateur via le mail que nous vous avons envoyé.'
                 );
                 $currentUser->setUsualBrowser($bname);
-            
+                $this->entityManager->persist($currentUser);
+                $this->entityManager->flush();
+                // return new RedirectResponse($this->router->generate("app_login"));
             } else {
                 $currentUser->setUsualBrowser($bname);
             }
