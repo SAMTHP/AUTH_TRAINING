@@ -116,7 +116,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
                 $flashBag = $request->getSession()->getFlashBag();
                 $flashBag->add(
                     'danger',
-                    'Merci de valider votre navigateur via le mail que nous vous avons envoyé.'
+                    'Merci de valider votre connexion via le mail que nous vous avons envoyé.'
                 );
                 $currentUser->setCountryName($ipInfos["countryName"]);
             }
@@ -160,7 +160,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
                     'Merci de valider votre navigateur via le mail que nous vous avons envoyé.'
                 );
                 $currentUser->setUsualBrowser($bname);
-              
+            
             } else {
                 $currentUser->setUsualBrowser($bname);
             }
