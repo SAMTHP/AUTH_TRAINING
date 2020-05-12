@@ -11,10 +11,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\LoginAttemptRepository;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Csrf\CsrfToken;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -67,11 +69,27 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
       
         $currentUser = $this->userRepository->findOneByEmail($userMail);
         $savedBrowserForCurrentUser = $currentUser->getUsualBrowser();
-
+        $savedIpForCurrentUser = $currentUser->getUsualIp();
         $u_agent = $_SERVER['HTTP_USER_AGENT'];
         $bname = 'Unknown';
+        
+        // ip change check for mail sending
+        $userIp = $request->server->get('REMOTE_ADDR');
+        if ($userIp != $savedIpForCurrentUser) {
+            if ($savedIpForCurrentUser != NULL) {
+                $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
+                ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
+                ->subject('Nouvelle adresse IP détectée')
+                ->htmlTemplate('email/ipaddress.html.twig')
+                ->context([
+                    'user' => $currentUser
+                ]);
+                $this->mailer->send($email);
+            }
+            $currentUser->setUsualIp($userIp);
+        }
 
-        // Next get the name of the useragent yes seperately and for good reason
+        
         if(preg_match('/MSIE/i',$u_agent) && !preg_match('/Opera/i',$u_agent)){
           $bname = 'Internet Explorer';
         }elseif(preg_match('/Firefox/i',$u_agent)){

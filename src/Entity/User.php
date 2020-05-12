@@ -51,6 +51,11 @@ class User implements UserInterface, TwoFactorInterface
      */
     private $usual_browser;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $usualIp;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -177,6 +182,18 @@ class User implements UserInterface, TwoFactorInterface
     public function setUsualBrowser(?string $usual_browser): self
     {
         $this->usual_browser = $usual_browser;
+
+        return $this;
+    }
+
+    public function getUsualIp(): ?string
+    {
+        return $this->usualIp;
+    }
+
+    public function setUsualIp(?string $usualIp): self
+    {
+        $this->usualIp = $usualIp;
 
         return $this;
     }
