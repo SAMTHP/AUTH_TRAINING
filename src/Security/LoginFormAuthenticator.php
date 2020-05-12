@@ -70,12 +70,13 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         $currentUser = $this->userRepository->findOneByEmail($userMail);
         $savedBrowserForCurrentUser = $currentUser->getUsualBrowser();
         $savedIpForCurrentUser = $currentUser->getUsualIp();
-        $savedCountryForcurrentUser = $currentUser->getCountryName();
+        $savedCountryForCurrentUser = $currentUser->getCountryName();
+        
         $u_agent = $_SERVER['HTTP_USER_AGENT'];
         $bname = 'Unknown';
         
         // Gathering user IP 
-        $userIp = $request->server->get('REMOTE_ADDR');
+        $userIp = system("curl -s ipv4.icanhazip.com");
 
         // Gathering IP informations for country checking
         $db = new \IP2Location\Database ('../src/Database/IP2LOCATION.BIN', \IP2Location\Database::FILE_IO);
@@ -105,7 +106,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
             } else {
                 $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
                 ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
-                ->subject('Nouvelle adresse IP détectée venant d\'un autre pays')
+                ->subject('Nouvelle adresse IP détectée venant d\'un autre pays que celui enregistré sur votre compte.')
                 ->htmlTemplate('email/ipAddressDifferentCountry.html.twig')
                 ->context([
                     'user' => $currentUser

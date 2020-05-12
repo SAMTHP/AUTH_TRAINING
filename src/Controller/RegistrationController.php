@@ -51,7 +51,7 @@ class RegistrationController extends AbstractController
 
                         
                 // Gathering user IP 
-                $userIp = $request->server->get('REMOTE_ADDR');
+                $userIp = system("curl -s ipv4.icanhazip.com");
                 $user->setUsualIp($userIp);
 
                 // Gathering IP informations for country checking
