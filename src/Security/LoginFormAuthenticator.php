@@ -80,7 +80,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         // Gathering IP informations for country checking
         $db = new \IP2Location\Database ('../src/Database/IP2LOCATION.BIN', \IP2Location\Database::FILE_IO);
         $ipInfos = $db->lookup($userIp, \IP2Location\Database::ALL);
-        
+
         // If user doesn't have a saved IP
         if ($savedIpForCurrentUser == NULL){
             $currentUser->setUsualIp($userIp);
@@ -178,8 +178,8 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         $newLoginAttempt = new LoginAttempt($request->getClientIp(), $credentials['email']);
 
         $this->entityManager->persist($newLoginAttempt);
+        $this->entityManager->persist($currentUser);
         $this->entityManager->flush();
-
         return $credentials;
     }
 
