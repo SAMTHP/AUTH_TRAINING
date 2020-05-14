@@ -17,10 +17,6 @@
                                 <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
                             {% endif %}
 
-                            {# {% if browserValid is not defined %}
-                               
-                            {% endif %} #}
-
                             {% if app.request.get('checkBrowser') == "true" %}
                                 <div class="alert alert-danger">Merci de valider votre navigateur via le mail que nous vous avons envoyé.</div>
                             {% endif %}
