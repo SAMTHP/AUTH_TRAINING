@@ -97,21 +97,21 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         if ($userIp != $savedIpForCurrentUser) {
             if ($ipInfos["countryName"] == $savedCountryForCurrentUser) {
                 $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
-                ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
-                ->subject('Nouvelle adresse IP détectée')
-                ->htmlTemplate('email/ipAddress.html.twig')
-                ->context([
-                    'user' => $currentUser
-                ]);
+                                               ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
+                                               ->subject('Nouvelle adresse IP détectée')
+                                               ->htmlTemplate('email/ipAddress.html.twig')
+                                               ->context([
+                                                    'user' => $currentUser
+                                               ]);
                 $this->mailer->send($email);
             } else {
                 $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
-                ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
-                ->subject('Nouvelle adresse IP détectée venant d\'un autre pays que celui enregistré sur votre compte.')
-                ->htmlTemplate('email/ipAddressDifferentCountry.html.twig')
-                ->context([
-                    'user' => $currentUser
-                ]);
+                                               ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
+                                               ->subject('Nouvelle adresse IP détectée venant d\'un autre pays que celui enregistré sur votre compte.')
+                                               ->htmlTemplate('email/ipAddressDifferentCountry.html.twig')
+                                               ->context([
+                                                   'user' => $currentUser
+                                               ]);
                 $this->mailer->send($email);
 
                 $flashBag = $request->getSession()->getFlashBag();
@@ -147,23 +147,23 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
             if ($savedBrowserForCurrentUser!=NULL){
 
                 $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
-                                                        ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
-                                                        ->subject('Nouveau navigateur détecté')
-                                                        ->htmlTemplate('email/browser.html.twig')
-                                                        ->context([
-                                                            'user' => $currentUser
-                                                        ]);
+                                                ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
+                                                ->subject('Nouveau navigateur détecté')
+                                                ->htmlTemplate('email/browser.html.twig')
+                                                ->context([
+                                                    'user' => $currentUser
+                                                ]);
                 $this->mailer->send($email);
                
                 $flashBag = $request->getSession()->getFlashBag();
                 $flashBag->add(
-                    'danger',
-                    'Merci de valider votre navigateur via le mail que nous vous avons envoyé.'
+                    'browserCheck',
+                    true
                 );
                 $currentUser->setUsualBrowser($bname);
                 $this->entityManager->persist($currentUser);
                 $this->entityManager->flush();
-                // return new RedirectResponse($this->router->generate("app_login"));
+
             } else {
                 $currentUser->setUsualBrowser($bname);
             }
@@ -236,7 +236,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
             return new RedirectResponse($targetPath);
         }
 
-        return new RedirectResponse($this->urlGenerator->generate('admin'));
+        return new RedirectResponse($this->urlGenerator->generate('home'));
     }
 
     protected function getLoginUrl()

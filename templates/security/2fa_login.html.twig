@@ -2,26 +2,42 @@
 
 {% block title %}Log in!{% endblock %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="/css/login.css">
+{% endblock %}
+
 {% block body %}
-    <div class="container">
-        <p class="label"><label for="_auth_code">Authentication Code google:</label></p>
+    <div class="container d-flex justify-content-center">
+        <div class="col-12 d-flex justify-content-center" style="margin-top: 20%" style="width: 100%">
+            <div class="card shadow " style="margin-left: 2%">
+                <p class="label mt-2 d-flex justify-content-center"><label for="_auth_code" class="text-center text-muted">Code d'authentification google</label></p>
 
-        <img id="imageQRcode" src="{{ url }}" alt="QR Code" name="imageQRcode" />
+                <div class="d-flex justify-content-center">
+                    <img class="shadow card border-info" id="imageQRcode" src="{{ url }}" alt="QR Code" name="imageQRcode" style="width:auto;"/>
+                </div>
+                <div class="d-flex justify-content-center mt-2">
+                    <span class="text-muted">Scannez le QR CODE</span>
+                </div>
 
-        <form class="form" action="/2fa_check" method="post">
-            <p class="widget">
-                <input
-                    id="_auth_code"
-                    type="text"
-                    name="_auth_code"
-                    autocomplete="one-time-code"
-                    autofocus
-                            />
-            </p>
+                <form class="form mt-4" action="/2fa_check" method="post">
+                    <div class="input-group d-flex justify-content-center">
+                        <input
+                            id="_auth_code"
+                            type="text"
+                            name="_auth_code"
+                            autocomplete="one-time-code"
+                            autofocus
+                            placeholder="Entrez votre code"
+                            class="form-control mx-2"
+                        />
+                    </div>
+                        
+                    <p class="mt-2 submit d-flex justify-content-center"><input class="btn btn-success" type="submit" value="Se connecter" /></p>
+                </form>
 
-            <p class="submit"><input type="submit" value="Login" /></p>
-        </form>
-
-        <p class="cancel"><a href="/logout">Cancel</a></p>
+                <p class="cancel ml-3"><a href="/logout">Cancel</a></p>
+            </div>
+        </div>
     </div>
 {% endblock %}
+
