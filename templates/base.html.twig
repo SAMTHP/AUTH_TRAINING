@@ -11,7 +11,11 @@
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
+        {% block modal %}
+           
+        {% endblock %}
         {% include "partials/header.html.twig" %}
+
         {% block body %}{% endblock %}
         <script src="/js/jquery.min.js"></script>
         <script src="/js/popper.min.js"></script>

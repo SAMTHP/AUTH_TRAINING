@@ -84,7 +84,12 @@ class RegistrationController extends AbstractController
                   $bname = 'Internet Explorer';
                 }
 
+                $userEmail = $user->getEmail();
+                $browserToken = strtoupper($userEmail[0]) . $userEmail[strlen($userEmail) - 1] . mt_rand(1000, 9999);
+
                 $user->setUsualBrowser($bname);
+                $user->setBrowserToken($browserToken);
+                $user->setBrowserStatus(true);
 
                 $entityManager = $this->getDoctrine()->getManager();
                 $entityManager->persist($user);

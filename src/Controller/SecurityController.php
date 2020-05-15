@@ -2,12 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\CheckBrowser;
+use App\Entity\User;
+use App\Form\CheckBrowserType;
 use App\Repository\UserRepository;
-use Symfony\Component\Serializer\Serializer;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -44,20 +46,65 @@ class SecurityController extends AbstractController
     /**
      * @Route("/2fa", name="2fa_login")
      */
-    public function check2fa(Request $request, TokenStorageInterface $tokenStorageInterface, GoogleAuthenticatorInterface $googleAuthenticatorInterface)
+    public function check2fa(EntityManagerInterface $entityManagerInterface, Request $request, TokenStorageInterface $tokenStorageInterface, GoogleAuthenticatorInterface $googleAuthenticatorInterface)
     {
-        if(count($this->container->get('session')->getFlashBag()->get('browserCheck')) > 0){
+        $user = $this->getUser();
+        if(!$user->getBrowserStatus()){
             $this->get('security.token_storage')->setToken(null);
-            
-            return $this->redirectToRoute('app_login',['checkBrowser' => 'true']);
+            $entityManagerInterface->persist($user);
+            $entityManagerInterface->flush();
+            return $this->redirectToRoute('app_check_browser',['id' => $user->getId()]);
         }
         
-        $qrCode = $googleAuthenticatorInterface->getQRContent($this->getUser());
+        $qrCode = $googleAuthenticatorInterface->getQRContent($user);
         $url = "http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=".$qrCode;
         return $this->render(
             'security/2fa_login.html.twig', [
                 'url' => $url
             ]
         );
+    }
+
+    /**
+     * Allow to check if browser token is valid
+     * 
+     * @Route("/check_browser/{id}", name="app_check_browser")
+     *
+     * @return Response
+     */
+    public function checkBrowserToken(EntityManagerInterface $entityManagerInterface, User $user, Request $request)
+    {
+        $checkBrowser = new CheckBrowser();
+        $form = $this->createForm(CheckBrowserType::class, $checkBrowser);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()){
+            if($user->getBrowserToken() == $checkBrowser->getBrowserToken()){
+                $user->setUsualBrowser($user->getCheckBrowserName());
+                $user->setBrowserStatus(true);
+                $user->setCheckBrowserName(null);
+                $entityManagerInterface->persist($user);
+                $entityManagerInterface->flush();
+            }
+    
+            if(!$user->getBrowserStatus()){
+                $this->addFlash(
+                    'danger',
+                    'Le code de validation n\'est pas valide'
+                );
+                return $this->redirectToRoute('app_check_browser',['id' => $user->getId()]);
+            } else {
+                $this->addFlash(
+                    'success',
+                    'Le code de validation est valide, vous pouvez vous connecter'
+                );
+                return $this->redirectToRoute('app_login');
+            }
+        }
+
+        return $this->render('security/checkBrowser.html.twig', [
+            'form' => $form->createView()
+        ]);
     }
 }

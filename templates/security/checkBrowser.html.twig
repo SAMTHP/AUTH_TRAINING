@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Log in!{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="/css/login.css">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row" style="margin-top: 20%">
+            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+                <div class="card card-signin my-5">
+                    <div class="card-body">
+                        {{ form_start(form) }}
+                            <div class="modal-body text-center">
+                                Veuillez renseigner le code de vérification
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <div class="form-group">
+                                    {{ form_widget(form.browserToken) }}
+                                    <small id="emailHelp" class="form-text text-muted">Le code vous a été envoyé par mail !</small>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Valider</button>
+                            </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

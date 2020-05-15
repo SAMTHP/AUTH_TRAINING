@@ -103,7 +103,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
                                                ->context([
                                                     'user' => $currentUser
                                                ]);
-                $this->mailer->send($email);
+                // $this->mailer->send($email);
             } else {
                 $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
                                                ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
@@ -112,7 +112,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
                                                ->context([
                                                    'user' => $currentUser
                                                ]);
-                $this->mailer->send($email);
+                // $this->mailer->send($email);
 
                 $flashBag = $request->getSession()->getFlashBag();
                 $flashBag->add(
@@ -146,6 +146,15 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         if ($bname != $savedBrowserForCurrentUser) {
             if ($savedBrowserForCurrentUser!=NULL){
 
+                $userEmail = $currentUser->getEmail();
+                $browserToken = strtoupper($userEmail[0]) . $userEmail[strlen($userEmail) - 1] . mt_rand(1000, 9999);
+                $currentUser->setBrowserToken($browserToken);
+                $currentUser->setCheckBrowserName($bname);
+                $currentUser->setBrowserStatus(false);
+                $this->entityManager->persist($currentUser);
+                $this->entityManager->flush();
+
+
                 $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
                                                 ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
                                                 ->subject('Nouveau navigateur détecté')
@@ -160,9 +169,6 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
                     'browserCheck',
                     true
                 );
-                $currentUser->setUsualBrowser($bname);
-                $this->entityManager->persist($currentUser);
-                $this->entityManager->flush();
 
             } else {
                 $currentUser->setUsualBrowser($bname);

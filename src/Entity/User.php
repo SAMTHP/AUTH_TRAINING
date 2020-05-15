@@ -61,6 +61,21 @@ class User implements UserInterface, TwoFactorInterface
      */
     private $countryName;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $browserStatus;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $browserToken;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $checkBrowserName;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -211,6 +226,42 @@ class User implements UserInterface, TwoFactorInterface
     public function setCountryName(?string $countryName): self
     {
         $this->countryName = $countryName;
+
+        return $this;
+    }
+
+    public function getBrowserStatus(): ?bool
+    {
+        return $this->browserStatus;
+    }
+
+    public function setBrowserStatus(?bool $browserStatus): self
+    {
+        $this->browserStatus = $browserStatus;
+
+        return $this;
+    }
+
+    public function getBrowserToken(): ?string
+    {
+        return $this->browserToken;
+    }
+
+    public function setBrowserToken(?string $browserToken): self
+    {
+        $this->browserToken = $browserToken;
+
+        return $this;
+    }
+
+    public function getCheckBrowserName(): ?string
+    {
+        return $this->checkBrowserName;
+    }
+
+    public function setCheckBrowserName(?string $checkBrowserName): self
+    {
+        $this->checkBrowserName = $checkBrowserName;
 
         return $this;
     }
