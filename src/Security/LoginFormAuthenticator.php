@@ -69,6 +69,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         $userMail = $request->request->get('email');
       
         $currentUser = $this->userRepository->findOneByEmail($userMail);
+        $currentUser->setBrowserStatus(true);
         $savedBrowserForCurrentUser = $currentUser->getUsualBrowser();
         $savedIpForCurrentUser = $currentUser->getUsualIp();
         $savedCountryForCurrentUser = $currentUser->getCountryName();
