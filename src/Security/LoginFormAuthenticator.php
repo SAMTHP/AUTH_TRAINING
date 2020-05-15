@@ -103,7 +103,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
                                                ->context([
                                                     'user' => $currentUser
                                                ]);
-                // $this->mailer->send($email);
+                $this->mailer->send($email);
             } else {
                 $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
                                                ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
@@ -112,7 +112,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
                                                ->context([
                                                    'user' => $currentUser
                                                ]);
-                // $this->mailer->send($email);
+                $this->mailer->send($email);
 
                 $flashBag = $request->getSession()->getFlashBag();
                 $flashBag->add(
