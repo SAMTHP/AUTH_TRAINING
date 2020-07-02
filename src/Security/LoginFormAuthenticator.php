@@ -64,14 +64,26 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
             && $request->isMethod('POST');
     }
 
+    /**
+    * Function used during login to check everything we need about the user logging in
+    */
     public function getCredentials(Request $request)
     {
+        // We get the user mail
         $userMail = $request->request->get('email');
       
+        // We get the current user from the mail
         $currentUser = $this->userRepository->findOneByEmail($userMail);
+        
         $currentUser->setBrowserStatus(true);
+
+        // We get the saved browser for the current user
         $savedBrowserForCurrentUser = $currentUser->getUsualBrowser();
+
+        // We get the saved IP for the current user
         $savedIpForCurrentUser = $currentUser->getUsualIp();
+        
+        // We get the saved country for the current user
         $savedCountryForCurrentUser = $currentUser->getCountryName();
         
         $u_agent = $_SERVER['HTTP_USER_AGENT'];
@@ -125,7 +137,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
             $currentUser->setUsualIp($userIp);
         }
 
-        
+        // Checking the browser used
         if(preg_match('/MSIE/i',$u_agent) && !preg_match('/Opera/i',$u_agent)){
           $bname = 'Internet Explorer';
         }elseif(preg_match('/Firefox/i',$u_agent)){
@@ -143,19 +155,25 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         }elseif(preg_match('/Trident/i',$u_agent)){
           $bname = 'Internet Explorer';
         }
-
+        // If the browser used is different than the saved one
         if ($bname != $savedBrowserForCurrentUser) {
+            // And if we have a saved browser (just in case a user was saved without browser)
             if ($savedBrowserForCurrentUser!=NULL){
 
                 $userEmail = $currentUser->getEmail();
+                // we create a new browser token that we attribute to the user
                 $browserToken = strtoupper($userEmail[0]) . $userEmail[strlen($userEmail) - 1] . mt_rand(1000, 9999);
                 $currentUser->setBrowserToken($browserToken);
                 $currentUser->setCheckBrowserName($bname);
                 $currentUser->setBrowserStatus(false);
+                
+                // we save the user in the DB
                 $this->entityManager->persist($currentUser);
+
+                // we clear the entity manager
                 $this->entityManager->flush();
 
-
+                // Sending a mail using the different browser template to the mail of the user,
                 $email = (new TemplatedEmail())->from(new Address('samappagency@gmail.com', 'Artisans App'))
                                                 ->to(new Address('samappagency@gmail.com', $currentUser->getUsername()))
                                                 ->subject('Nouveau navigateur détecté')
@@ -172,6 +190,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
                 );
 
             } else {
+                // if there was no saved browser, we set the actual as the regular one.
                 $currentUser->setUsualBrowser($bname);
             }
         }
@@ -185,15 +204,23 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
             Security::LAST_USERNAME,
             $credentials['email']
         );
-
+        // we create a new login attempt to save in the database
         $newLoginAttempt = new LoginAttempt($request->getClientIp(), $credentials['email']);
 
+        // we save the new login attempt and the user in the DB
         $this->entityManager->persist($newLoginAttempt);
         $this->entityManager->persist($currentUser);
+
+        // we clear the entity manager
         $this->entityManager->flush();
+
+        // returning the mail/password/csrf token -> credentials
         return $credentials;
     }
 
+    /**
+     * Function used to check if the user exists
+     */
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         $token = new CsrfToken('authenticate', $credentials['csrf_token']);
@@ -211,6 +238,10 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         return $user;
     }
 
+
+    /**
+     * Function used to check the credentials returned by GetCredentials
+     */
     public function checkCredentials($credentials, UserInterface $user)
     {
         if ($this->loginAttemptRepository->countRecentLoginAttempts($credentials['email']) > 3) {

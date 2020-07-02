@@ -6,6 +6,7 @@ use App\Entity\User;
 use Symfony\Component\Form\Form;
 use App\Form\RegistrationFormType;
 use Symfony\Component\Form\FormError;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,15 +21,22 @@ class RegistrationController extends AbstractController
 {
     /**
      * @Route("/register", name="app_register")
+     * Register function; checking and saving all the needed values
      */
-    public function register(ValidatorInterface $validator, GoogleAuthenticatorInterface $googleAuthenticatorInterface, Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
+    public function register(ValidatorInterface $validator, EntityManagerInterface $entityManager, GoogleAuthenticatorInterface $googleAuthenticatorInterface, Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
     {
+        // We create a new user
         $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
 
+        // We create a new form from the RegistrationFormType 
+        $form = $this->createForm(RegistrationFormType::class, $user);
+        
+        // We fill the form with the request content
+        $form->handleRequest($request);
+        
+        // If the form is OK
         if ($form->isSubmitted() && $form->isValid()) {
-            
+            // Create a new validator of the password (not compromised in a data breach)
             $violations = $validator->validate($form->get('plainPassword')->getNormData(), [
                 new NotCompromisedPassword(),
             ]);
@@ -57,15 +65,21 @@ class RegistrationController extends AbstractController
                 // Gathering IP informations for country checking
                 $db = new \IP2Location\Database ('../src/Database/IP2LOCATION.BIN', \IP2Location\Database::FILE_IO);
                 $ipInfos = $db->lookup($userIp, \IP2Location\Database::ALL);
+                
+                // we save the user country at registration time as the default one
                 $user->setCountryName($ipInfos['countryName']);
                 
-
+                // We create a new secret key for the account (double authentication token)
                 $user->setGoogleAuthenticatorSecret($googleAuthenticatorInterface->generateSecret());
 
+                // We get the Server informations containing the browser informations
                 $u_agent = $_SERVER['HTTP_USER_AGENT'];
+
+                // we set a default browser name
                 $bname = 'Unknown';
         
-                // Next get the name of the useragent yes seperately and for good reason
+                // Next get the name of the useragent separately 
+                // and saves a custom string corresponding to the browser
                 if(preg_match('/MSIE/i',$u_agent) && !preg_match('/Opera/i',$u_agent)){
                   $bname = 'Internet Explorer';
                 }elseif(preg_match('/Firefox/i',$u_agent)){
@@ -84,19 +98,22 @@ class RegistrationController extends AbstractController
                   $bname = 'Internet Explorer';
                 }
 
+                // Get the user mail
                 $userEmail = $user->getEmail();
+
+                // We save a token that'll be used for confirmation mails
                 $browserToken = strtoupper($userEmail[0]) . $userEmail[strlen($userEmail) - 1] . mt_rand(1000, 9999);
 
+                // save the informations on the user entity
                 $user->setUsualBrowser($bname);
                 $user->setBrowserToken($browserToken);
                 $user->setBrowserStatus(true);
 
-                $entityManager = $this->getDoctrine()->getManager();
+                // We save the user in the database
                 $entityManager->persist($user);
-                $entityManager->flush();
-
-                // do anything else you need here, like send an email
-               
+                
+                // We clear the entity manager
+                $entityManager->flush();               
 
                 return $this->redirectToRoute('app_login');
             }

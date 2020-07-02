@@ -21,10 +21,15 @@ class LoginAttemptRepository extends ServiceEntityRepository
         parent::__construct($registry, LoginAttempt::class);
     }
 
+    /*
+    * function made to get the recent login attempts for a username in order to avoid bruteforce attacks
+    */
     public function countRecentLoginAttempts(string $username): int
     {
+        // We decide the nb of minutes we want to get the recent login attempts from.
         $timeAgo = new \DateTimeImmutable(sprintf('-%d minutes', self::DELAY_IN_MINUTES));
 
+        // DQL (Doctrine Query Language) to get all the login attempts in the past X minutes for the user Y (as an int)
         return $this->createQueryBuilder('la')
             ->select('COUNT(la)')
             ->where('la.date >= :date')

@@ -9,6 +9,7 @@ class AuthenticationController extends AbstractController
 {
     /**
      * @Route("/authentication", name="authentication")
+     * Renders the authentication page corresponding to the "authentication" route
      */
     public function index()
     {
@@ -19,6 +20,7 @@ class AuthenticationController extends AbstractController
 
     /**
      * @Route("/admin", name="admin")
+     * Renders the index page corresponding to the "admin" route
      */
     public function admin()
     {
